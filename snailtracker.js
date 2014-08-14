@@ -1,0 +1,75 @@
+var SnailTracker = Object.create({
+    api_key: null,
+    api_url: null,
+    url: function(uri){
+        return [this.api_url, uri].join("/");
+    },
+    initialize: function(){
+        var _this = this;
+        // TODO: Let's catch an event when the session ID is complete, then setup the tracking
+        this.session.initialize(this);
+        this.actions.initialize(this);
+        // Session is ready, let's start watching for events!
+        $('body').on('click keyup keypress focus blur', function(ev){
+            _this.actions.create(ev, $(ev.target));
+        });
+    },
+    cookies: {
+        session: 'snailtracker-session'
+    }
+});
+
+SnailTracker.actions = Object.create({
+    snailtracker: null,
+    initialize: function(snailtracker){
+        this.snailtracker = snailtracker;
+    },
+    create: function(event, $target){
+        var selector = $target.getSelector();
+        var type     = event.type;
+        var text     = $target.text();
+        var _this = this;
+        // TODO: cache locally for a while before sending up to reduce the number of requests.
+        $.post(this.snailtracker.url("actions"), $.param({
+            api_key: _this.snailtracker.api_key,
+            app_action: {
+                session_api_key: _this.snailtracker.session.id,
+                url: window.location.origin,
+                keycode: event.keyCode,
+                char: String.fromCharCode(event.which),
+                action_type_name: type,
+                target_text: text,
+                selector: selector
+            }
+        }));
+    }
+});
+
+SnailTracker.session = Object.create({
+    snailtracker: null,
+    id: null,
+    create: function(){
+        var _this = this;
+        $.post(this.snailtracker.url("sessions"), $.param({
+            api_key: _this.snailtracker.api_key,
+            session: {
+                user_id: _this.snailtracker.user_id,
+                user_name: _this.snailtracker.user_name,
+                email: _this.snailtracker.email
+            }
+        }), function(response){
+            _this.id = response["session"]["api_key"];
+            $.cookie(_this.snailtracker.cookies.session, _this.id);
+        });
+    },
+    initialize: function(snailtracker){
+        // TODO: Expire the session after a certain amount of time
+        this.snailtracker = snailtracker;
+        if( $.cookie(this.snailtracker.cookies.session)){
+            this.id = $.cookie(this.snailtracker.cookies.session);
+        } else {
+            this.create();
+        }
+    }
+});
+
