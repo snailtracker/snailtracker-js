@@ -10,7 +10,10 @@ var SnailTracker = Object.create({
         this.session.initialize(this);
         this.actions.initialize(this);
         // Session is ready, let's start watching for events!
-        $('body').on('click keyup keypress focus blur', function(ev){
+        $('body').on('click focus blur', function(ev){
+            _this.actions.create(ev, $(ev.target));
+        });
+        $('body').on('change', ':input', function(ev){
             _this.actions.create(ev, $(ev.target));
         });
     },
@@ -29,18 +32,26 @@ SnailTracker.actions = Object.create({
         var type     = event.type;
         var text     = $target.text();
         var _this = this;
+
+        var app_action_data = {
+            session_api_key: _this.snailtracker.session.id,
+            url: window.location.origin,
+            keycode: event.keyCode,
+            action_type_name: type,
+            target_text: text,
+            target_value: $(event.target).secure_val(),
+            selector: selector,
+            char: null
+        };
+
+        if($.inArray(event.type, ["keyup", "keydown"])){
+            app_action_data.char = String.fromCharCode(event.which);
+        }
+
         // TODO: cache locally for a while before sending up to reduce the number of requests.
         $.post(this.snailtracker.url("actions"), $.param({
             api_key: _this.snailtracker.api_key,
-            app_action: {
-                session_api_key: _this.snailtracker.session.id,
-                url: window.location.origin,
-                keycode: event.keyCode,
-                char: String.fromCharCode(event.which),
-                action_type_name: type,
-                target_text: text,
-                selector: selector
-            }
+            app_action: app_action_data
         }));
     }
 });
@@ -72,4 +83,19 @@ SnailTracker.session = Object.create({
         }
     }
 });
+
+$.fn.secure_val = function(){
+    var replacement = "XXXXXX";
+    var value = this.val();
+    var value_numbers_only = value.replace(/[^0-9]/g, '');
+    // Obfuscate CC numbers
+    if( value_numbers_only.length >= 12 && value_numbers_only.length <= 20 ){
+        return replacement;
+    }
+    // Obfuscate passwords
+    if( this.attr('type') == "password" ){
+        return replacement;
+    }
+    return value;
+}
 
