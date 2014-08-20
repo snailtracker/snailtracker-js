@@ -17,11 +17,7 @@ And it will start tracking your users!
 
 TODO
 ----
-There are still a few very important things to wrap up first:
-
 1.  Cache the results locally before sending (instead of sending hundreds of requests).
-
-2.  Expire the session after 24 hours of inactivity.
 
 License
 -------
