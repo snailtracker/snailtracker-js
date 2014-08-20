@@ -70,14 +70,19 @@ SnailTracker.session = Object.create({
             }
         }), function(response){
             _this.id = response["session"]["api_key"];
-            $.cookie(_this.snailtracker.cookies.session, _this.id);
+            _this.set_cookie();
         });
+    },
+    set_cookie: function(){
+        $.cookie(this.snailtracker.cookies.session, this.id, {expires: 1});
     },
     initialize: function(snailtracker){
         // TODO: Expire the session after a certain amount of time
         this.snailtracker = snailtracker;
         if( $.cookie(this.snailtracker.cookies.session)){
             this.id = $.cookie(this.snailtracker.cookies.session);
+            // Update the cookie to keep the session alive.
+            this.set_cookie();
         } else {
             this.create();
         }
