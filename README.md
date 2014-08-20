@@ -18,6 +18,7 @@ And it will start tracking your users!
 TODO
 ----
 There are still a few very important things to wrap up first:
+
 1.  (DONE) Ignore password fields and anything that looks like a credit card (12-20 numbers).
 
 2.  Cache the results locally before sending (instead of sending hundreds of requests).
