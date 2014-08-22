@@ -34,10 +34,8 @@ SnailTracker.actions = Object.create({
         var _this = this;
 
         var app_action_data = {
-            session_api_key: _this.snailtracker.session.id,
             url: window.location.origin,
             keycode: event.keyCode,
-            action_type_name: type,
             target_text: text,
             target_value: $(event.target).secure_val(),
             selector: selector,
@@ -51,6 +49,8 @@ SnailTracker.actions = Object.create({
         // TODO: cache locally for a while before sending up to reduce the number of requests.
         $.post(this.snailtracker.url("actions"), $.param({
             api_key: _this.snailtracker.api_key,
+            session_api_key: _this.snailtracker.session.id,
+            action_type_name: type,
             app_action: app_action_data
         }));
     }
