@@ -2,7 +2,7 @@ var SnailTracker = Object.create({
     api_key: null,
     api_url: null,
     url: function(uri){
-        return [this.api_url, uri].join("/");
+        return [this.api_url, "api", uri].join("/");
     },
     initialize: function(){
         var _this = this;
